@@ -28,6 +28,22 @@
         <button id="reset-btn" class="btn btn--ghost">Changer de fichier</button>
       </div>
       <p id="page-summary" class="page-summary"></p>
+
+      <div class="margins">
+        <p class="margins__title">Marges (en mm)</p>
+        <div class="margins__grid">
+          <label>
+            Marge extérieure
+            <input type="number" id="margin-outer" min="0" max="50" step="0.5" value="5">
+          </label>
+          <label>
+            Marge de reliure (côté pli)
+            <input type="number" id="margin-gutter" min="0" max="50" step="0.5" value="10">
+          </label>
+        </div>
+        <p class="hint">La marge de reliure laisse de la place près du pli central pour l'agrafe sans couper le texte. Mets 0 partout pour occuper toute la page A5.</p>
+      </div>
+
       <button id="convert-btn" class="btn btn--primary">Créer la brochure A5</button>
     </section>
 

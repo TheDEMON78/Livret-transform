@@ -11,6 +11,10 @@ const progressEl = document.getElementById("progress");
 const resultEl = document.getElementById("result");
 const downloadLink = document.getElementById("download-link");
 const errorEl = document.getElementById("error");
+const marginOuterInput = document.getElementById("margin-outer");
+const marginGutterInput = document.getElementById("margin-gutter");
+
+const MM_TO_PT = 2.834645669;
 
 let selectedFile = null;
 
@@ -48,7 +52,9 @@ convertBtn.addEventListener("click", async () => {
 
   try {
     const bytes = await selectedFile.arrayBuffer();
-    const bookletBytes = await buildBooklet(bytes);
+    const outerMm = parseMargin(marginOuterInput.value);
+    const gutterMm = parseMargin(marginGutterInput.value);
+    const bookletBytes = await buildBooklet(bytes, outerMm, gutterMm);
     const blob = new Blob([bookletBytes], { type: "application/pdf" });
     const url = URL.createObjectURL(blob);
     downloadLink.href = url;
@@ -102,6 +108,11 @@ function resetUI() {
   show(dropZone);
 }
 
+function parseMargin(value) {
+  const n = parseFloat(value);
+  return Number.isFinite(n) && n >= 0 ? n : 0;
+}
+
 function bookletName(originalName) {
   const base = originalName.replace(/\.pdf$/i, "");
   return `${base} - Brochure A5.pdf`;
@@ -126,7 +137,7 @@ function hide(el) {
  * imposed so that folding + stapling the printed stack in half
  * restores the original reading order (front then back per sheet).
  */
-async function buildBooklet(sourceBytes) {
+async function buildBooklet(sourceBytes, outerMm = 0, gutterMm = 0) {
   const srcDoc = await PDFDocument.load(sourceBytes);
 
   const firstPage = srcDoc.getPage(0);
@@ -147,6 +158,8 @@ async function buildBooklet(sourceBytes) {
 
   const sheetWidth = pageWidth * 2;
   const sheetHeight = pageHeight;
+  const outerPt = outerMm * MM_TO_PT;
+  const gutterPt = gutterMm * MM_TO_PT;
 
   for (let i = 1; i <= sheets; i++) {
     const frontLeft = n - (2 * i - 2);
@@ -154,18 +167,33 @@ async function buildBooklet(sourceBytes) {
     const backLeft = 2 * i;
     const backRight = n - (2 * i - 1);
 
-    drawSheet(outDoc, embeddedPages, frontLeft, frontRight, sheetWidth, sheetHeight, pageWidth);
-    drawSheet(outDoc, embeddedPages, backLeft, backRight, sheetWidth, sheetHeight, pageWidth);
+    drawSheet(outDoc, embeddedPages, frontLeft, frontRight, sheetWidth, sheetHeight, pageWidth, outerPt, gutterPt);
+    drawSheet(outDoc, embeddedPages, backLeft, backRight, sheetWidth, sheetHeight, pageWidth, outerPt, gutterPt);
   }
 
   return outDoc.save();
 }
 
-function drawSheet(outDoc, embeddedPages, leftPageNum, rightPageNum, sheetWidth, sheetHeight, halfWidth) {
+function drawSheet(outDoc, embeddedPages, leftPageNum, rightPageNum, sheetWidth, sheetHeight, halfWidth, outerPt, gutterPt) {
   const page = outDoc.addPage([sheetWidth, sheetHeight]);
   const leftEP = embeddedPages[leftPageNum - 1];
   const rightEP = embeddedPages[rightPageNum - 1];
 
-  page.drawPage(leftEP, { x: 0, y: 0, width: halfWidth, height: sheetHeight });
-  page.drawPage(rightEP, { x: halfWidth, y: 0, width: halfWidth, height: sheetHeight });
+  // Left half: gutter (fold) is on its right edge, outer margin everywhere else.
+  drawInFittedBox(page, leftEP, outerPt, outerPt, halfWidth - outerPt - gutterPt, sheetHeight - 2 * outerPt);
+
+  // Right half: gutter (fold) is on its left edge, outer margin everywhere else.
+  drawInFittedBox(page, rightEP, halfWidth + gutterPt, outerPt, halfWidth - outerPt - gutterPt, sheetHeight - 2 * outerPt);
+}
+
+function drawInFittedBox(page, embeddedPage, boxX, boxY, boxWidth, boxHeight) {
+  const safeWidth = Math.max(boxWidth, 1);
+  const safeHeight = Math.max(boxHeight, 1);
+  const scale = Math.min(safeWidth / embeddedPage.width, safeHeight / embeddedPage.height);
+  const drawWidth = embeddedPage.width * scale;
+  const drawHeight = embeddedPage.height * scale;
+  const x = boxX + (safeWidth - drawWidth) / 2;
+  const y = boxY + (safeHeight - drawHeight) / 2;
+
+  page.drawPage(embeddedPage, { x, y, width: drawWidth, height: drawHeight });
 }

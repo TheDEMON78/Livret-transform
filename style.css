@@ -104,6 +104,47 @@ h1 {
   margin: 0.75rem 0 1.25rem;
 }
 
+.margins {
+  margin-bottom: 1.25rem;
+}
+
+.margins__title {
+  font-weight: 600;
+  margin: 0 0 0.6rem;
+}
+
+.margins__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.margins__grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.margins__grid input {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.5rem 0.6rem;
+  font-size: 1rem;
+  color: var(--text);
+  font-family: inherit;
+}
+
+.margins__grid input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.margins .hint {
+  margin: 0.6rem 0 0;
+}
+
 .btn {
   border: none;
   border-radius: 10px;
