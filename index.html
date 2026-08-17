@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Livret Transform — PDF A4 vers brochure A5</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="wrap">
+    <header>
+      <h1>📖 Livret Transform</h1>
+      <p class="subtitle">Convertis un PDF A4 (pages dans l'ordre) en brochure A5 imprimable recto-verso, prête à plier et agrafer.</p>
+    </header>
+
+    <section id="drop-zone" class="drop-zone">
+      <input type="file" id="file-input" accept="application/pdf" hidden>
+      <div class="drop-zone__content">
+        <div class="drop-zone__icon">📄</div>
+        <p><strong>Dépose ton PDF ici</strong> ou clique pour choisir un fichier</p>
+        <p class="hint">Pages A4, dans l'ordre de 1 à N — tout se passe dans ton navigateur, rien n'est envoyé sur un serveur.</p>
+      </div>
+    </section>
+
+    <section id="file-info" class="file-info hidden">
+      <div class="file-info__row">
+        <span id="file-name" class="file-name"></span>
+        <button id="reset-btn" class="btn btn--ghost">Changer de fichier</button>
+      </div>
+      <p id="page-summary" class="page-summary"></p>
+      <button id="convert-btn" class="btn btn--primary">Créer la brochure A5</button>
+    </section>
+
+    <section id="progress" class="progress hidden">
+      <div class="spinner"></div>
+      <p>Génération de la brochure…</p>
+    </section>
+
+    <section id="result" class="result hidden">
+      <p class="result__title">✅ Brochure générée !</p>
+      <a id="download-link" class="btn btn--primary" download>Télécharger la brochure A5</a>
+    </section>
+
+    <section id="error" class="error hidden"></section>
+
+    <footer>
+      <details>
+        <summary>Comment ça marche ?</summary>
+        <p>
+          Le PDF source est découpé en cahiers de 4 pages. Chaque feuille A4 imprimée
+          contient 2 pages A5 recto et 2 pages A5 verso, dans l'ordre d'imposition
+          d'une brochure agrafée (page 1 à côté de la dernière page, etc.).
+          Il suffit ensuite d'imprimer en recto-verso (retournement sur le petit côté),
+          de plier la pile en deux et d'agrafer au centre.
+        </p>
+        <p>Si le nombre de pages n'est pas un multiple de 4, des pages blanches sont ajoutées à la fin.</p>
+      </details>
+    </footer>
+  </main>
+
+  <script src="vendor/pdf-lib.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
