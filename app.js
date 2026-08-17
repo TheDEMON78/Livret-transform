@@ -13,6 +13,8 @@ const downloadLink = document.getElementById("download-link");
 const errorEl = document.getElementById("error");
 const marginOuterInput = document.getElementById("margin-outer");
 const marginGutterInput = document.getElementById("margin-gutter");
+const marginTopInput = document.getElementById("margin-top");
+const marginBottomInput = document.getElementById("margin-bottom");
 
 const MM_TO_PT = 2.834645669;
 
@@ -52,9 +54,13 @@ convertBtn.addEventListener("click", async () => {
 
   try {
     const bytes = await selectedFile.arrayBuffer();
-    const outerMm = parseMargin(marginOuterInput.value);
-    const gutterMm = parseMargin(marginGutterInput.value);
-    const bookletBytes = await buildBooklet(bytes, outerMm, gutterMm);
+    const margins = {
+      outerMm: parseMargin(marginOuterInput.value),
+      gutterMm: parseMargin(marginGutterInput.value),
+      topMm: parseMargin(marginTopInput.value),
+      bottomMm: parseMargin(marginBottomInput.value),
+    };
+    const bookletBytes = await buildBooklet(bytes, margins);
     const blob = new Blob([bookletBytes], { type: "application/pdf" });
     const url = URL.createObjectURL(blob);
     downloadLink.href = url;
@@ -137,7 +143,8 @@ function hide(el) {
  * imposed so that folding + stapling the printed stack in half
  * restores the original reading order (front then back per sheet).
  */
-async function buildBooklet(sourceBytes, outerMm = 0, gutterMm = 0) {
+async function buildBooklet(sourceBytes, margins = {}) {
+  const { outerMm = 0, gutterMm = 0, topMm = 0, bottomMm = 0 } = margins;
   const srcDoc = await PDFDocument.load(sourceBytes);
 
   const firstPage = srcDoc.getPage(0);
@@ -158,8 +165,12 @@ async function buildBooklet(sourceBytes, outerMm = 0, gutterMm = 0) {
 
   const sheetWidth = pageWidth * 2;
   const sheetHeight = pageHeight;
-  const outerPt = outerMm * MM_TO_PT;
-  const gutterPt = gutterMm * MM_TO_PT;
+  const pt = {
+    outer: outerMm * MM_TO_PT,
+    gutter: gutterMm * MM_TO_PT,
+    top: topMm * MM_TO_PT,
+    bottom: bottomMm * MM_TO_PT,
+  };
 
   for (let i = 1; i <= sheets; i++) {
     const frontLeft = n - (2 * i - 2);
@@ -167,23 +178,26 @@ async function buildBooklet(sourceBytes, outerMm = 0, gutterMm = 0) {
     const backLeft = 2 * i;
     const backRight = n - (2 * i - 1);
 
-    drawSheet(outDoc, embeddedPages, frontLeft, frontRight, sheetWidth, sheetHeight, pageWidth, outerPt, gutterPt);
-    drawSheet(outDoc, embeddedPages, backLeft, backRight, sheetWidth, sheetHeight, pageWidth, outerPt, gutterPt);
+    drawSheet(outDoc, embeddedPages, frontLeft, frontRight, sheetWidth, sheetHeight, pageWidth, pt);
+    drawSheet(outDoc, embeddedPages, backLeft, backRight, sheetWidth, sheetHeight, pageWidth, pt);
   }
 
   return outDoc.save();
 }
 
-function drawSheet(outDoc, embeddedPages, leftPageNum, rightPageNum, sheetWidth, sheetHeight, halfWidth, outerPt, gutterPt) {
+function drawSheet(outDoc, embeddedPages, leftPageNum, rightPageNum, sheetWidth, sheetHeight, halfWidth, pt) {
   const page = outDoc.addPage([sheetWidth, sheetHeight]);
   const leftEP = embeddedPages[leftPageNum - 1];
   const rightEP = embeddedPages[rightPageNum - 1];
 
-  // Left half: gutter (fold) is on its right edge, outer margin everywhere else.
-  drawInFittedBox(page, leftEP, outerPt, outerPt, halfWidth - outerPt - gutterPt, sheetHeight - 2 * outerPt);
+  const boxHeight = sheetHeight - pt.top - pt.bottom;
+  const boxWidth = halfWidth - pt.outer - pt.gutter;
 
-  // Right half: gutter (fold) is on its left edge, outer margin everywhere else.
-  drawInFittedBox(page, rightEP, halfWidth + gutterPt, outerPt, halfWidth - outerPt - gutterPt, sheetHeight - 2 * outerPt);
+  // Left half: gutter (fold) is on its right edge, outer margin on its left edge.
+  drawInFittedBox(page, leftEP, pt.outer, pt.bottom, boxWidth, boxHeight);
+
+  // Right half: gutter (fold) is on its left edge, outer margin on its right edge.
+  drawInFittedBox(page, rightEP, halfWidth + pt.gutter, pt.bottom, boxWidth, boxHeight);
 }
 
 function drawInFittedBox(page, embeddedPage, boxX, boxY, boxWidth, boxHeight) {

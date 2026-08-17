@@ -35,13 +35,25 @@
           <label>
             Marge extérieure
             <input type="number" id="margin-outer" min="0" max="50" step="0.5" value="5">
+            <span class="field-hint">Bord opposé au pli (le bord "libre" de chaque demi-page).</span>
           </label>
           <label>
             Marge de reliure (côté pli)
             <input type="number" id="margin-gutter" min="0" max="50" step="0.5" value="10">
+            <span class="field-hint">Bord côté pli central. Plus grande pour laisser de la place à l'agrafe sans couper le texte.</span>
+          </label>
+          <label>
+            Marge haute
+            <input type="number" id="margin-top" min="0" max="50" step="0.5" value="5">
+            <span class="field-hint">Haut de chaque page (le même pour les deux demi-pages de la feuille).</span>
+          </label>
+          <label>
+            Marge basse
+            <input type="number" id="margin-bottom" min="0" max="50" step="0.5" value="5">
+            <span class="field-hint">Bas de chaque page (le même pour les deux demi-pages de la feuille).</span>
           </label>
         </div>
-        <p class="hint">La marge de reliure laisse de la place près du pli central pour l'agrafe sans couper le texte. Mets 0 partout pour occuper toute la page A5.</p>
+        <p class="hint">Le contenu de chaque page A4 d'origine est réduit et centré pour tenir dans l'espace restant après ces 4 marges. Mets 0 partout pour occuper toute la page A5 comme avant.</p>
       </div>
 
       <button id="convert-btn" class="btn btn--primary">Créer la brochure A5</button>

@@ -141,6 +141,12 @@ h1 {
   border-color: var(--accent);
 }
 
+.field-hint {
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-weight: 400;
+}
+
 .margins .hint {
   margin: 0.6rem 0 0;
 }
