@@ -36,3 +36,37 @@ pages n'est pas un multiple de 4, des pages blanches sont ajoutées à la fin.
 
 Dans les paramètres du dépôt (`Settings > Pages`), choisis comme source
 `Deploy from a branch`, branche `main`, dossier `/ (root)`.
+
+## App de bureau (Windows / macOS / Linux)
+
+Cette branche (`desktop-app`) embarque la même page web dans une app
+[Electron](https://www.electronjs.org/) installable sur ordinateur. Tous les
+calculs restent faits dans le navigateur intégré (Chromium), et la
+bibliothèque `pdf-lib` est livrée localement dans `vendor/` — l'app ne fait
+aucune requête réseau au démarrage ni pendant la conversion.
+
+### Lancer en local
+
+```bash
+npm install
+npm start
+```
+
+### Construire un installeur
+
+```bash
+npm run dist:win     # .exe (NSIS + portable)
+npm run dist:mac     # .dmg / .zip
+npm run dist:linux   # .AppImage / .deb
+```
+
+Les fichiers générés se trouvent dans `dist/`.
+
+### Releases automatiques
+
+Un workflow GitHub Actions (`.github/workflows/release.yml`) construit
+automatiquement les installeurs Windows, macOS et Linux à chaque push sur
+`desktop-app`, puis publie une nouvelle Release GitHub avec un numéro de
+version incrémenté (`1.0.<numéro de run>`). Seules les 10 releases les plus
+récentes sont conservées, les plus anciennes sont supprimées
+automatiquement.

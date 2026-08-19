@@ -1,0 +1,45 @@
+{
+  "name": "livret-transform",
+  "version": "1.0.0",
+  "description": "Convertisseur de brochure A5 (PDF A4 vers brochure A5 imprimable), en app de bureau Windows/Linux/macOS.",
+  "main": "main.js",
+  "author": "Livret Transform",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder",
+    "dist:win": "electron-builder --win",
+    "dist:mac": "electron-builder --mac",
+    "dist:linux": "electron-builder --linux"
+  },
+  "devDependencies": {
+    "electron": "^32.2.7",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.livrettransform.app",
+    "productName": "Livret Transform",
+    "files": [
+      "main.js",
+      "index.html",
+      "style.css",
+      "app.js",
+      "vendor/**/*"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": ["nsis", "portable"]
+    },
+    "mac": {
+      "target": ["dmg", "zip"],
+      "category": "public.app-category.productivity"
+    },
+    "linux": {
+      "target": ["AppImage", "deb"],
+      "category": "Office"
+    }
+  }
+}
