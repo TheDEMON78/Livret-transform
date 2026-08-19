@@ -3,7 +3,10 @@
   "version": "1.0.0",
   "description": "Convertisseur de brochure A5 (PDF A4 vers brochure A5 imprimable), en app de bureau Windows/Linux/macOS.",
   "main": "main.js",
-  "author": "Livret Transform",
+  "author": {
+    "name": "Livret Transform",
+    "email": "noreply@livret-transform.local"
+  },
   "license": "MIT",
   "private": true,
   "scripts": {
@@ -20,6 +23,7 @@
   "build": {
     "appId": "com.livrettransform.app",
     "productName": "Livret Transform",
+    "publish": null,
     "files": [
       "main.js",
       "index.html",
