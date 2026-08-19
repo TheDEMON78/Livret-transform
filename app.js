@@ -157,6 +157,14 @@ async function buildBooklet(sourceBytes, margins = {}) {
     srcDoc.addPage([pageWidth, pageHeight]);
   }
 
+  // Some PDFs (often from scanners) contain pages with no content stream
+  // at all, which pdf-lib refuses to embed ("missing Contents"). Drawing
+  // a zero-size shape forces pdf-lib to create an (empty) content stream
+  // without changing what the page looks like.
+  for (const page of srcDoc.getPages()) {
+    page.drawRectangle({ x: 0, y: 0, width: 0, height: 0 });
+  }
+
   const n = srcDoc.getPageCount();
   const sheets = n / 4;
 
