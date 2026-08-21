@@ -70,3 +70,21 @@ automatiquement les installeurs Windows, macOS et Linux à chaque push sur
 version incrémenté (`1.0.<numéro de run>`). Seules les 10 releases les plus
 récentes sont conservées, les plus anciennes sont supprimées
 automatiquement.
+
+### macOS : « l'app est endommagée »
+
+L'app n'est pas signée par un certificat Apple payant (juste signée en
+ad-hoc en interne pour qu'elle puisse se lancer sur Apple Silicon). macOS
+peut donc afficher un avertissement au premier lancement. Si un message dit
+que l'app est « endommagée et ne peut pas être ouverte », c'est en réalité
+l'attribut de quarantaine posé par le navigateur au téléchargement, pas un
+vrai problème de fichier. Dans le Terminal :
+
+```bash
+xattr -cr "/Applications/Livret Transform.app"
+```
+
+(adapte le chemin si l'app n'est pas encore dans `/Applications`). Ensuite
+l'app s'ouvre normalement — au pire avec l'avertissement classique
+« développeur non identifié », qui se contourne avec un clic droit sur
+l'app puis « Ouvrir ».
