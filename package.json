@@ -25,6 +25,7 @@
     "productName": "Livret Transform",
     "icon": "build/icon.png",
     "publish": null,
+    "afterPack": "scripts/afterPack.cjs",
     "files": [
       "main.js",
       "index.html",
@@ -40,7 +41,8 @@
     },
     "mac": {
       "target": ["dmg", "zip"],
-      "category": "public.app-category.productivity"
+      "category": "public.app-category.productivity",
+      "identity": null
     },
     "linux": {
       "target": ["AppImage", "deb"],
