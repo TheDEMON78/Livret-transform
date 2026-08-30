@@ -377,7 +377,7 @@
       render();
     });
     row.appendChild(cb);
-    row.appendChild(document.createTextNode("Ligne de l'amitié (marge)"));
+    row.appendChild(document.createTextNode("Marge"));
     container.appendChild(row);
 
     const color = document.createElement("input");
