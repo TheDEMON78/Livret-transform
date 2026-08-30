@@ -3,13 +3,22 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Livret Transform — PDF A4 vers brochure A5</title>
+<title>School-tool — Brochure A5 & Papeterie</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <header class="app-header">
+    <div class="app-brand">🛠️ School-tool</div>
+    <nav class="tool-tabs">
+      <button class="tool-tab active" data-tool="brochure" type="button">📖 Brochure A5</button>
+      <button class="tool-tab" data-tool="papeterie" type="button">📐 Papeterie</button>
+    </nav>
+  </header>
+
+  <section id="tool-brochure" class="tool-panel">
   <main class="wrap">
-    <header>
-      <h1>📖 Livret Transform</h1>
+    <header class="tool-intro">
+      <h1>📖 Brochure A5</h1>
       <p class="subtitle">Convertis un PDF A4 (pages dans l'ordre) en brochure A5 imprimable recto-verso, prête à plier et agrafer.</p>
     </header>
 
@@ -85,8 +94,93 @@
       </details>
     </footer>
   </main>
+  </section>
+
+  <section id="tool-papeterie" class="tool-panel hidden">
+    <div class="paper-app">
+      <div class="paper-topbar">
+        <h1 class="paper-topbar__title">📐 Générateur de trames</h1>
+        <div class="paper-topbar__actions">
+          <div class="paper-models">
+            <button id="paper-models-btn" class="btn btn--ghost" type="button">☰ Modèles</button>
+            <div id="paper-models-panel" class="paper-models__panel hidden"></div>
+          </div>
+          <button id="paper-print-btn" class="btn btn--primary" type="button">🖨️ Imprimer</button>
+          <button id="paper-svg-btn" class="btn btn--ghost" type="button">⬇ SVG</button>
+          <button id="paper-link-btn" class="btn btn--ghost" type="button">🔗 Lien</button>
+          <button id="paper-help-btn" class="btn btn--ghost" type="button">❓ Aide</button>
+        </div>
+      </div>
+
+      <div id="paper-help" class="paper-help hidden">
+        <p><strong>Réglure</strong> : le motif du papier (lignes, Séyès, quadrillage, points…).</p>
+        <p><strong>Interligne</strong> : espacement entre les lignes/points du motif, en millimètres.</p>
+        <p><strong>Séyès</strong> : réglure française classique pour l'apprentissage de l'écriture — bandes Hampe / Corps / Base / Jambage.</p>
+        <p><strong>Page</strong> : format, marges, en-tête et encart de commentaires.</p>
+        <p><strong>Lien</strong> copie une URL qui recharge exactement ce réglage. <strong>SVG</strong> télécharge le motif en vectoriel.</p>
+      </div>
+
+      <div class="paper-body">
+        <aside class="paper-sidebar">
+          <div class="paper-subtabs">
+            <button class="paper-subtab active" data-subtab="trame" type="button">Trame</button>
+            <button class="paper-subtab" data-subtab="page" type="button">Page</button>
+          </div>
+
+          <div id="paper-panel-trame" class="paper-panel-content">
+            <p class="paper-section-title">Réglure</p>
+            <div class="reglure-grid" id="reglure-grid"></div>
+
+            <div class="paper-field">
+              <label for="paper-interligne">Interligne <span id="interligne-value"></span></label>
+              <input type="range" id="paper-interligne" min="1" max="15" step="0.5">
+            </div>
+
+            <div id="paper-dynamic-fields"></div>
+          </div>
+
+          <div id="paper-panel-page" class="paper-panel-content hidden">
+            <p class="paper-section-title">Format</p>
+            <select id="paper-size">
+              <option value="A4">A4 – 210 × 297 mm</option>
+              <option value="A5">A5 – 148 × 210 mm</option>
+              <option value="Letter">Letter – 216 × 279 mm</option>
+            </select>
+            <div class="orientation-toggle">
+              <button data-orientation="portrait" class="active" type="button">▯ Portrait</button>
+              <button data-orientation="landscape" type="button">▭ Paysage</button>
+            </div>
+
+            <p class="paper-section-title">Marges (mm)</p>
+            <div class="margins-cross">
+              <input type="number" id="page-margin-top" class="m-top" min="0" max="60">
+              <input type="number" id="page-margin-left" class="m-left" min="0" max="60">
+              <button id="margin-link-btn" class="margin-link active" type="button" title="Lier les 4 marges">🔗</button>
+              <input type="number" id="page-margin-right" class="m-right" min="0" max="60">
+              <input type="number" id="page-margin-bottom" class="m-bottom" min="0" max="60">
+            </div>
+
+            <p class="paper-section-title">En-tête</p>
+            <label class="checkbox-row"><input type="checkbox" id="page-header"> Afficher un en-tête</label>
+
+            <p class="paper-section-title">Commentaires</p>
+            <label class="checkbox-row"><input type="checkbox" id="page-comments"> Afficher un encart</label>
+          </div>
+        </aside>
+
+        <div class="paper-preview">
+          <div class="paper-preview__scroll">
+            <svg id="paper-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div id="paper-toast" class="paper-toast"></div>
 
   <script src="vendor/pdf-lib.min.js"></script>
   <script src="app.js"></script>
+  <script src="papeterie.js"></script>
 </body>
 </html>
