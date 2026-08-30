@@ -1,7 +1,7 @@
 {
-  "name": "livret-transform",
+  "name": "school-tool",
   "version": "1.0.0",
-  "description": "Convertisseur de brochure A5 (PDF A4 vers brochure A5 imprimable), en app de bureau Windows/Linux/macOS.",
+  "description": "Boîte à outils scolaire (brochure A5, générateur de trames) en app de bureau Windows/Linux/macOS.",
   "main": "main.js",
   "author": {
     "name": "BloopStudio",
@@ -21,8 +21,8 @@
     "electron-builder": "^25.1.8"
   },
   "build": {
-    "appId": "com.bloopstudio.livrettransform",
-    "productName": "Livret Transform",
+    "appId": "com.bloopstudio.schooltool",
+    "productName": "School-tool",
     "copyright": "Copyright © 2026 BloopStudio",
     "icon": "build/icon.png",
     "publish": null,
@@ -32,6 +32,7 @@
       "index.html",
       "style.css",
       "app.js",
+      "papeterie.js",
       "vendor/**/*"
     ],
     "directories": {

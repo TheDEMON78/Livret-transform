@@ -92,7 +92,7 @@ l'attribut de quarantaine posé par le navigateur au téléchargement, pas un
 vrai problème de fichier. Dans le Terminal :
 
 ```bash
-xattr -cr "/Applications/Livret Transform.app"
+xattr -cr "/Applications/School-tool.app"
 ```
 
 (adapte le chemin si l'app n'est pas encore dans `/Applications`). Ensuite

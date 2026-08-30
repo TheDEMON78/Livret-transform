@@ -3,11 +3,11 @@ const path = require("path");
 
 function createWindow() {
   const win = new BrowserWindow({
-    width: 900,
-    height: 900,
-    minWidth: 480,
+    width: 1200,
+    height: 860,
+    minWidth: 760,
     minHeight: 600,
-    title: "Livret Transform",
+    title: "School-tool",
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,
