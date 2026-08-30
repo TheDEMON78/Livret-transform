@@ -19,6 +19,7 @@ const marginBottomInput = document.getElementById("margin-bottom");
 const MM_TO_PT = 2.834645669;
 
 let selectedFile = null;
+let currentDownloadUrl = null;
 
 dropZone.addEventListener("click", () => fileInput.click());
 
@@ -61,9 +62,15 @@ convertBtn.addEventListener("click", async () => {
       bottomMm: parseMargin(marginBottomInput.value),
     };
     const bookletBytes = await buildBooklet(bytes, margins);
-    const blob = new Blob([bookletBytes], { type: "application/pdf" });
-    const url = URL.createObjectURL(blob);
-    downloadLink.href = url;
+    // `new Uint8Array(typedArray)` always copies into a fresh ArrayBuffer
+    // at byteOffset 0. Safari/WebKit has a long-standing bug where Blob
+    // ignores a typed array's byteOffset/length and reads its whole
+    // underlying buffer instead, silently corrupting the download; this
+    // copy sidesteps it regardless of what pdf-lib handed back.
+    const blob = new Blob([new Uint8Array(bookletBytes)], { type: "application/pdf" });
+    if (currentDownloadUrl) URL.revokeObjectURL(currentDownloadUrl);
+    currentDownloadUrl = URL.createObjectURL(blob);
+    downloadLink.href = currentDownloadUrl;
     downloadLink.download = bookletName(selectedFile.name);
     hide(progressEl);
     show(resultEl);
