@@ -31,14 +31,30 @@
       label: "Séyès",
       icon: iconSeyes,
       defaults: seyesDefaults(),
-      render: (root, t, area) => renderSeyes(root, t, area, false),
+      render: (root, t, area) => renderSeyes(root, t, area, t.gridEnabled),
     },
     {
       id: "seyesGrille",
       label: "Séyès quadrillé",
       icon: iconSeyesGrid,
-      defaults: Object.assign(seyesDefaults(), { gridColor: "#c9d6e8" }),
+      defaults: seyesDefaults(),
       render: (root, t, area) => renderSeyes(root, t, area, true),
+    },
+    {
+      id: "serpodile",
+      label: "Serpodile (Terre-Herbe-Ciel)",
+      icon: iconSerpodile,
+      defaults: {
+        interligne: 6,
+        cielColor: "#cfe8fa",
+        herbeColor: "#dcf3dc",
+        terreColor: "#f1e3d3",
+        ligneColor: "#2e7d32",
+        margeEnabled: true,
+        margeColor: "#e53935",
+        margeOffset: 20,
+      },
+      render: renderSerpodile,
     },
     {
       id: "quadrillage",
@@ -84,6 +100,8 @@
       zoneCorps: "#dff2ef",
       zoneJambage: "#eaf1fb",
       amitie: { enabled: false, color: "#e05a5a" },
+      gridEnabled: false,
+      gridColor: "#c9d6e8",
     };
   }
 
@@ -94,6 +112,7 @@
     { name: "Petits carreaux 3mm", type: "quadrillage", trame: { interligne: 3 }, page: { size: "A4", orientation: "portrait" } },
     { name: "Papier pointillé", type: "points", trame: { interligne: 6 }, page: { size: "A4", orientation: "portrait" } },
     { name: "Lignes simples 7mm", type: "lignes", trame: { interligne: 7 }, page: { size: "A4", orientation: "portrait" } },
+    { name: "Serpodile (dys)", type: "serpodile", trame: { interligne: 7 }, page: { size: "A4", orientation: "portrait" } },
   ];
 
   const state = {
@@ -207,9 +226,10 @@
         ]);
         addCheckboxField(dynamicFields, "Intermédiaire hampe", t.interHampe, (v) => (t.interHampe = v));
         addCheckboxField(dynamicFields, "Intermédiaire jambage", t.interJambage, (v) => (t.interJambage = v));
-        if (state.typeId === "seyesGrille") {
-          addColorFields(dynamicFields, [["gridColor", "Quadrillage"]]);
+        if (state.typeId === "seyes") {
+          addCheckboxField(dynamicFields, "Quadrillage (carreaux)", t.gridEnabled, (v) => (t.gridEnabled = v));
         }
+        addColorFields(dynamicFields, [["gridColor", "Quadrillage"]]);
         addAmitieField(dynamicFields, t);
         addCheckboxField(dynamicFields, "Zones colorées", t.zonesFill, (v) => (t.zonesFill = v));
         addColorFields(dynamicFields, [
@@ -217,6 +237,17 @@
           ["zoneCorps", "Fond corps"],
           ["zoneJambage", "Fond jambage"],
         ]);
+        break;
+      }
+      case "serpodile": {
+        addColorFields(dynamicFields, [
+          ["cielColor", "Ciel"],
+          ["herbeColor", "Herbe"],
+          ["terreColor", "Terre"],
+          ["ligneColor", "Ligne d'écriture"],
+        ]);
+        addCheckboxField(dynamicFields, "Marge", t.margeEnabled, (v) => (t.margeEnabled = v));
+        addColorFields(dynamicFields, [["margeColor", "Marge"]]);
         break;
       }
       case "quadrillage": {
@@ -659,6 +690,43 @@
     }
   }
 
+  /**
+   * "Serpodile" (Terre-Herbe-Ciel): a dyslexia/dyspraxia-friendly ruling
+   * that colors three horizontal bands per line of writing — Ciel (sky,
+   * blue, where ascenders reach), Herbe (grass, green, the x-height body
+   * of letters, bottom edge = the writing line), Terre (earth, brown,
+   * where descenders dip) — so children can spatially anchor letters
+   * ("feet on the ground, heads in the sky"). An optional red vertical
+   * line marks the start-of-line margin, as on traditional French
+   * school notebooks.
+   */
+  function renderSerpodile(root, t, area) {
+    const bandH = t.interligne;
+    let y = area.y;
+    let i = 0;
+    while (y < area.y + area.height - 0.01) {
+      const kind = i % 3;
+      const color = kind === 0 ? t.cielColor : kind === 1 ? t.herbeColor : t.terreColor;
+      const h = Math.min(bandH, area.y + area.height - y);
+      root.appendChild(rect(area.x, y, area.width, h, color));
+      y += bandH;
+      i++;
+    }
+
+    let ligneY = area.y + bandH * 2;
+    while (ligneY <= area.y + area.height + 0.01) {
+      root.appendChild(line(area.x, ligneY, area.x + area.width, ligneY, t.ligneColor, 0.5));
+      ligneY += bandH * 3;
+    }
+
+    if (t.margeEnabled) {
+      const mx = area.x + (t.margeOffset || 20);
+      if (mx < area.x + area.width) {
+        root.appendChild(line(mx, area.y, mx, area.y + area.height, t.margeColor, 0.5));
+      }
+    }
+  }
+
   // ---------- Icons for the réglure picker ----------
 
   function iconLines() {
@@ -712,6 +780,17 @@
   function iconDots() {
     let s = "";
     for (let y = 6; y <= 34; y += 6) for (let x = 6; x <= 34; x += 6) s += `<circle cx="${x}" cy="${y}" r="1" fill="#2b2620"/>`;
+    return `<svg viewBox="0 0 40 40">${s}</svg>`;
+  }
+  function iconSerpodile() {
+    let s = "";
+    const colors = ["#cfe8fa", "#dcf3dc", "#f1e3d3"];
+    for (let i = 0, y = 4; y < 36; y += 5.3, i++) {
+      s += `<rect x="4" y="${y}" width="32" height="5.3" fill="${colors[i % 3]}"/>`;
+    }
+    s += `<line x1="4" y1="14.6" x2="36" y2="14.6" stroke="#2e7d32" stroke-width="0.8"/>`;
+    s += `<line x1="4" y1="30.5" x2="36" y2="30.5" stroke="#2e7d32" stroke-width="0.8"/>`;
+    s += `<line x1="8" y1="4" x2="8" y2="36" stroke="#e53935" stroke-width="0.8"/>`;
     return `<svg viewBox="0 0 40 40">${s}</svg>`;
   }
 

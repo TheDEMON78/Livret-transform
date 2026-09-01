@@ -31,12 +31,14 @@ Les marges (extérieure, reliure, haute, basse) sont réglables.
 
 Générateur de trames/réglures configurable (façon
 [Keskiss'trame](https://keskisstrame.forge.apps.education.fr/papeterie/)) :
-lignes simples, réglure Séyès (avec ou sans quadrillage), quadrillage uni ou
-coloré, croisillons, points. Réglages : interligne, couleurs, épaisseur,
-séparatrice, format de page (A4/A5/Letter, portrait/paysage), marges,
-en-tête, encart de commentaires. Export en impression directe (mise en page
-physique exacte) ou en SVG, et un lien partageable qui restaure exactement
-la configuration choisie.
+lignes simples, réglure Séyès (avec quadrillage optionnel), quadrillage uni
+ou coloré, croisillons, points, et un lignage **Serpodile** (Terre-Herbe-Ciel)
+pensé pour les enfants dys — bandes colorées marron/vert/bleu qui aident à
+situer spatialement les lettres, plus une marge rouge verticale. Réglages :
+interligne, couleurs, épaisseur, séparatrice, format de page (A4/A5/Letter,
+portrait/paysage), marges, en-tête, encart de commentaires. Export en
+impression directe (mise en page physique exacte) ou en SVG, et un lien
+partageable qui restaure exactement la configuration choisie.
 
 ## Développement local
 
