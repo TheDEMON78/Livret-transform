@@ -126,7 +126,18 @@
       header: false,
       comments: false,
     },
+    texts: [],
   };
+
+  // Free text tool state (declared early: render() writes lastPageW/H
+  // and runs during initial setup, before this file's later sections).
+  let textMode = false;
+  let selectedTextId = null;
+  let editingTextId = null;
+  let dragState = null;
+  let lastPageW = 210;
+  let lastPageH = 297;
+  let textIdCounter = 0;
 
   function cloneDefaults(typeId) {
     const type = RULING_TYPES.find((t) => t.id === typeId);
@@ -553,6 +564,8 @@
 
   function render() {
     const { pageW, pageH, area, header, comments } = computeLayout();
+    lastPageW = pageW;
+    lastPageH = pageH;
 
     paperSvg.setAttribute("width", `${pageW}mm`);
     paperSvg.setAttribute("height", `${pageH}mm`);
@@ -572,7 +585,28 @@
       paperSvg.appendChild(rect(comments.x, comments.y, comments.width, comments.height, "none", { stroke: "#8a94a6", "stroke-width": 0.4, "stroke-dasharray": "2,1.5" }));
     }
 
+    state.texts.forEach((t) => renderTextNode(paperSvg, t));
+
     updatePrintPageSize(pageW, pageH);
+  }
+
+  function renderTextNode(root, t) {
+    const el = svgEl("text", {
+      x: round(t.x),
+      y: round(t.y + t.size),
+      "font-size": t.size,
+      fill: t.color,
+      "font-family": "-apple-system, Helvetica, Arial, sans-serif",
+      "data-text-id": t.id,
+      class: "paper-text-node",
+    });
+    const lines = t.text.split("\n");
+    lines.forEach((lineText, i) => {
+      const tspan = svgEl("tspan", { x: round(t.x), dy: i === 0 ? 0 : t.size * 1.2 });
+      tspan.textContent = lineText;
+      el.appendChild(tspan);
+    });
+    root.appendChild(el);
   }
 
   function renderLignes(root, t, area) {
@@ -821,7 +855,7 @@
   });
 
   document.getElementById("paper-link-btn").addEventListener("click", async () => {
-    const payload = { typeId: state.typeId, trame: state.trame, page: state.page };
+    const payload = { typeId: state.typeId, trame: state.trame, page: state.page, texts: state.texts };
     const encoded = btoa(encodeURIComponent(JSON.stringify(payload)));
     const url = `${location.origin}${location.pathname}?papeterie=${encoded}`;
     try {
@@ -834,6 +868,169 @@
 
   document.getElementById("paper-help-btn").addEventListener("click", () => {
     document.getElementById("paper-help").classList.toggle("hidden");
+  });
+
+  // ---------- Free text tool ----------
+
+  const textBtn = document.getElementById("paper-text-btn");
+  const editor = document.getElementById("paper-text-editor");
+  const deleteBtn = document.getElementById("paper-text-delete");
+  const previewScroll = document.querySelector(".paper-preview__scroll");
+
+  textBtn.addEventListener("click", () => {
+    textMode = !textMode;
+    textBtn.classList.toggle("active", textMode);
+    paperSvg.classList.toggle("text-mode", textMode);
+    if (!textMode) {
+      deselectText();
+    }
+  });
+
+  function clientToMm(clientX, clientY) {
+    const rect = paperSvg.getBoundingClientRect();
+    const scale = rect.width / lastPageW;
+    return { x: (clientX - rect.left) / scale, y: (clientY - rect.top) / scale, scale, rect };
+  }
+
+  function mmToClient(x, y) {
+    const rect = paperSvg.getBoundingClientRect();
+    const scale = rect.width / lastPageW;
+    return { left: rect.left + x * scale, top: rect.top + y * scale, scale };
+  }
+
+  paperSvg.addEventListener("mousedown", (e) => {
+    if (editingTextId) return;
+    const nodeEl = e.target.closest("[data-text-id]");
+
+    if (nodeEl) {
+      const id = nodeEl.getAttribute("data-text-id");
+      if (textMode) {
+        openEditor(id);
+      } else {
+        selectText(id);
+        const textObj = state.texts.find((t) => t.id === id);
+        dragState = { id, startClientX: e.clientX, startClientY: e.clientY, startX: textObj.x, startY: textObj.y, scale: clientToMm(e.clientX, e.clientY).scale };
+      }
+      e.preventDefault();
+      return;
+    }
+
+    if (textMode) {
+      e.preventDefault();
+      const { x, y } = clientToMm(e.clientX, e.clientY);
+      const obj = { id: `t${++textIdCounter}`, x, y: Math.max(0, y - 3), text: "", size: 5, color: "#1a1a2e" };
+      state.texts.push(obj);
+      render();
+      openEditor(obj.id, true);
+    } else {
+      deselectText();
+    }
+  });
+
+  document.addEventListener("mousemove", (e) => {
+    if (!dragState) return;
+    const dx = (e.clientX - dragState.startClientX) / dragState.scale;
+    const dy = (e.clientY - dragState.startClientY) / dragState.scale;
+    const textObj = state.texts.find((t) => t.id === dragState.id);
+    if (!textObj) return;
+    textObj.x = Math.max(0, dragState.startX + dx);
+    textObj.y = Math.max(0, dragState.startY + dy);
+    render();
+    positionDeleteButton(dragState.id);
+  });
+
+  document.addEventListener("mouseup", () => {
+    dragState = null;
+  });
+
+  previewScroll.addEventListener("scroll", () => {
+    if (editingTextId) positionEditor(editingTextId);
+    if (selectedTextId) positionDeleteButton(selectedTextId);
+  });
+
+  function selectText(id) {
+    selectedTextId = id;
+    deleteBtn.classList.remove("hidden");
+    positionDeleteButton(id);
+  }
+
+  function deselectText() {
+    selectedTextId = null;
+    deleteBtn.classList.add("hidden");
+  }
+
+  deleteBtn.addEventListener("click", () => {
+    if (!selectedTextId) return;
+    state.texts = state.texts.filter((t) => t.id !== selectedTextId);
+    deselectText();
+    render();
+  });
+
+  function positionDeleteButton(id) {
+    const textObj = state.texts.find((t) => t.id === id);
+    if (!textObj) return;
+    const pos = mmToClient(textObj.x, textObj.y);
+    deleteBtn.style.left = `${pos.left - 24}px`;
+    deleteBtn.style.top = `${pos.top - 8}px`;
+  }
+
+  function openEditor(id, isNew) {
+    const textObj = state.texts.find((t) => t.id === id);
+    if (!textObj) return;
+    editingTextId = id;
+    deselectText();
+
+    const pos = mmToClient(textObj.x, textObj.y);
+    editor.style.left = `${pos.left}px`;
+    editor.style.top = `${pos.top}px`;
+    editor.style.fontSize = `${textObj.size * pos.scale}px`;
+    editor.style.color = textObj.color;
+    editor.value = textObj.text;
+    editor.classList.remove("hidden");
+    autoSizeEditor();
+    editor.focus();
+    if (!isNew) editor.select();
+  }
+
+  function positionEditor(id) {
+    const textObj = state.texts.find((t) => t.id === id);
+    if (!textObj) return;
+    const pos = mmToClient(textObj.x, textObj.y);
+    editor.style.left = `${pos.left}px`;
+    editor.style.top = `${pos.top}px`;
+  }
+
+  function autoSizeEditor() {
+    editor.style.height = "auto";
+    editor.style.width = "auto";
+    editor.style.height = `${editor.scrollHeight}px`;
+    editor.style.width = `${Math.max(60, editor.scrollWidth + 12)}px`;
+  }
+
+  editor.addEventListener("input", () => {
+    autoSizeEditor();
+    const textObj = state.texts.find((t) => t.id === editingTextId);
+    if (textObj) {
+      textObj.text = editor.value;
+      render();
+      positionEditor(editingTextId);
+    }
+  });
+
+  editor.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") editor.blur();
+  });
+
+  editor.addEventListener("blur", () => {
+    const id = editingTextId;
+    editingTextId = null;
+    editor.classList.add("hidden");
+    if (!id) return;
+    const textObj = state.texts.find((t) => t.id === id);
+    if (textObj && textObj.text.trim() === "") {
+      state.texts = state.texts.filter((t) => t.id !== id);
+      render();
+    }
   });
 
   const modelsBtn = document.getElementById("paper-models-btn");
@@ -882,6 +1079,7 @@
       state.typeId = payload.typeId;
       state.trame = Object.assign(cloneDefaults(payload.typeId), payload.trame);
       state.page = Object.assign(state.page, payload.page);
+      state.texts = Array.isArray(payload.texts) ? payload.texts : [];
       refreshControlsFromState();
       const papTab = document.querySelector('.tool-tab[data-tool="papeterie"]');
       if (papTab) papTab.click();

@@ -105,6 +105,7 @@
             <button id="paper-models-btn" class="btn btn--ghost" type="button">☰ Modèles</button>
             <div id="paper-models-panel" class="paper-models__panel hidden"></div>
           </div>
+          <button id="paper-text-btn" class="btn btn--ghost" type="button">🖊️ Texte</button>
           <button id="paper-print-btn" class="btn btn--primary" type="button">🖨️ Imprimer</button>
           <button id="paper-svg-btn" class="btn btn--ghost" type="button">⬇ SVG</button>
           <button id="paper-link-btn" class="btn btn--ghost" type="button">🔗 Lien</button>
@@ -117,6 +118,7 @@
         <p><strong>Interligne</strong> : espacement entre les lignes/points du motif, en millimètres.</p>
         <p><strong>Séyès</strong> : réglure française classique pour l'apprentissage de l'écriture — bandes Hampe / Corps / Base / Jambage, avec un quadrillage optionnel.</p>
         <p><strong>Serpodile</strong> : lignage Terre-Herbe-Ciel pour les enfants dys — bandes colorées pour situer les lettres dans l'espace (pieds sur la terre, têtes dans le ciel).</p>
+        <p><strong>Texte</strong> : active le mode texte, puis clique n'importe où sur la page pour écrire à cet endroit. Clique sur un texte existant pour le modifier ou le déplacer (glisser-déposer), et utilise le bouton « × » pour le supprimer.</p>
         <p><strong>Page</strong> : format, marges, en-tête et encart de commentaires.</p>
         <p><strong>Lien</strong> copie une URL qui recharge exactement ce réglage. <strong>SVG</strong> télécharge le motif en vectoriel.</p>
       </div>
@@ -176,6 +178,9 @@
         </div>
       </div>
     </div>
+
+    <textarea id="paper-text-editor" class="paper-text-editor hidden" rows="1"></textarea>
+    <button id="paper-text-delete" class="paper-text-delete hidden" type="button" title="Supprimer ce texte">×</button>
   </section>
 
   <div id="paper-toast" class="paper-toast"></div>
