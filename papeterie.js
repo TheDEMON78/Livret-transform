@@ -623,10 +623,15 @@
     }
 
     if (withGrid) {
+      // Squares should match the base-line spacing (every 4 sub-lines,
+      // e.g. 8mm for the default 2mm interligne), not the fine sub-line
+      // spacing — otherwise the grid is far denser than real squared
+      // Séyès paper and looks like a solid mesh instead of carreaux.
+      const gridStep = unit * 4;
       let x = area.x;
       while (x <= area.x + area.width + 0.01) {
         root.appendChild(line(x, area.y, x, area.y + area.height, t.gridColor || "#c9d6e8", (t.thickness || 0.25) * 0.7));
-        x += unit;
+        x += gridStep;
       }
     }
 
