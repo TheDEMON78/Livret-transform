@@ -55,3 +55,55 @@ puis ouvre `http://localhost:8000`.
 
 Dans les paramètres du dépôt (`Settings > Pages`), choisis comme source
 `Deploy from a branch`, branche `main`, dossier `/ (root)`.
+
+## App de bureau (Windows / macOS / Linux)
+
+Cette branche (`desktop-app`) embarque la même page web dans une app
+[Electron](https://www.electronjs.org/) installable sur ordinateur. Tous les
+calculs restent faits dans le navigateur intégré (Chromium), et la
+bibliothèque `pdf-lib` est livrée localement dans `vendor/` — l'app ne fait
+aucune requête réseau au démarrage ni pendant la conversion.
+
+### Lancer en local
+
+```bash
+npm install
+npm start
+```
+
+### Construire un installeur
+
+```bash
+npm run dist:win     # .exe (NSIS + portable)
+npm run dist:mac     # .dmg / .zip
+npm run dist:linux   # .AppImage / .deb
+```
+
+Les fichiers générés se trouvent dans `dist/`.
+
+### Releases automatiques
+
+Un workflow GitHub Actions (`.github/workflows/release.yml`) construit
+automatiquement les installeurs Windows, macOS et Linux à chaque push sur
+`desktop-app`, puis publie une nouvelle Release GitHub avec un numéro de
+version incrémenté (`1.0.<numéro de run>`). Seules les 10 releases les plus
+récentes sont conservées, les plus anciennes sont supprimées
+automatiquement.
+
+### macOS : « l'app est endommagée »
+
+L'app n'est pas signée par un certificat Apple payant (juste signée en
+ad-hoc en interne pour qu'elle puisse se lancer sur Apple Silicon). macOS
+peut donc afficher un avertissement au premier lancement. Si un message dit
+que l'app est « endommagée et ne peut pas être ouverte », c'est en réalité
+l'attribut de quarantaine posé par le navigateur au téléchargement, pas un
+vrai problème de fichier. Dans le Terminal :
+
+```bash
+xattr -cr "/Applications/School-tool.app"
+```
+
+(adapte le chemin si l'app n'est pas encore dans `/Applications`). Ensuite
+l'app s'ouvre normalement — au pire avec l'avertissement classique
+« développeur non identifié », qui se contourne avec un clic droit sur
+l'app puis « Ouvrir ».
