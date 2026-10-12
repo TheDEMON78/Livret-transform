@@ -530,6 +530,41 @@
 
   // ---------- SVG rendering ----------
 
+  /**
+   * Finds the y (mm) of the nearest "writing line" for the current
+   * réglure, so text dropped on the page actually sits on a line
+   * instead of floating wherever the pointer happened to land.
+   */
+  function nearestLineY(mmY, area) {
+    const t = state.trame;
+    const rel = Math.max(0, mmY - area.y);
+
+    switch (state.typeId) {
+      case "lignes":
+      case "quadrillage":
+      case "quadrillageColore":
+      case "points": {
+        const k = Math.max(0, Math.round(rel / t.interligne));
+        return area.y + k * t.interligne;
+      }
+      case "seyes":
+      case "seyesGrille": {
+        // Base (writing) lines fall every 4th sub-line.
+        const unit = t.interligne;
+        const k = Math.max(0, Math.round((rel - unit * 3) / (unit * 4)));
+        return area.y + unit * (4 * k + 3);
+      }
+      case "serpodile": {
+        // The écriture line sits at each Herbe/Terre boundary.
+        const bandH = t.interligne;
+        const k = Math.max(0, Math.round((rel - bandH * 2) / (bandH * 3)));
+        return area.y + bandH * (3 * k + 2);
+      }
+      default:
+        return mmY;
+    }
+  }
+
   function svgEl(tag, attrs) {
     const el = document.createElementNS(SVG_NS, tag);
     for (const k in attrs) {
@@ -918,7 +953,10 @@
     if (textMode) {
       e.preventDefault();
       const { x, y } = clientToMm(e.clientX, e.clientY);
-      const obj = { id: `t${++textIdCounter}`, x, y: Math.max(0, y - 3), text: "", size: 5, color: "#1a1a2e" };
+      const size = 5;
+      const { area } = computeLayout();
+      const lineY = nearestLineY(y, area);
+      const obj = { id: `t${++textIdCounter}`, x, y: lineY - size, text: "", size, color: "#1a1a2e" };
       state.texts.push(obj);
       render();
       openEditor(obj.id, true);
@@ -940,6 +978,16 @@
   });
 
   document.addEventListener("mouseup", () => {
+    if (dragState) {
+      const textObj = state.texts.find((t) => t.id === dragState.id);
+      if (textObj) {
+        const { area } = computeLayout();
+        const lineY = nearestLineY(textObj.y + textObj.size, area);
+        textObj.y = lineY - textObj.size;
+        render();
+        positionDeleteButton(dragState.id);
+      }
+    }
     dragState = null;
   });
 
