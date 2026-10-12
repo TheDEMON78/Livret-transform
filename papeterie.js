@@ -555,6 +555,16 @@
   }
 
   /**
+   * A font size (mm) that fits comfortably within one writing line's
+   * height for the active réglure, so text dropped on a 2mm Séyès
+   * grid or a 15mm "lignes" ruling both look proportioned instead of
+   * always using the same fixed size.
+   */
+  function defaultTextSize() {
+    return Math.max(2, Math.min(14, lineSpacing() * 0.7));
+  }
+
+  /**
    * Finds the y (mm) of the nearest "writing line" for the current
    * réglure, so text dropped on the page actually sits on a line
    * instead of floating wherever the pointer happened to land.
@@ -978,7 +988,7 @@
     if (textMode) {
       e.preventDefault();
       const { x, y } = clientToMm(e.clientX, e.clientY);
-      const size = 5;
+      const size = defaultTextSize();
       const { area } = computeLayout();
       const lineY = nearestLineY(y, area);
       const obj = { id: `t${++textIdCounter}`, x, y: lineY - size, text: "", size, color: "#1a1a2e" };
