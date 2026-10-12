@@ -531,6 +531,30 @@
   // ---------- SVG rendering ----------
 
   /**
+   * The vertical distance (mm) between consecutive writing lines for
+   * the active réglure — used both to snap new text and so that a line
+   * break in a text box jumps to the next real line, whatever the
+   * current interligne is.
+   */
+  function lineSpacing() {
+    const t = state.trame;
+    switch (state.typeId) {
+      case "lignes":
+      case "quadrillage":
+      case "quadrillageColore":
+      case "points":
+        return t.interligne;
+      case "seyes":
+      case "seyesGrille":
+        return t.interligne * 4;
+      case "serpodile":
+        return t.interligne * 3;
+      default:
+        return t.interligne || 8;
+    }
+  }
+
+  /**
    * Finds the y (mm) of the nearest "writing line" for the current
    * réglure, so text dropped on the page actually sits on a line
    * instead of floating wherever the pointer happened to land.
@@ -626,6 +650,7 @@
   }
 
   function renderTextNode(root, t) {
+    const spacing = lineSpacing();
     const el = svgEl("text", {
       x: round(t.x),
       y: round(t.y + t.size),
@@ -637,7 +662,7 @@
     });
     const lines = t.text.split("\n");
     lines.forEach((lineText, i) => {
-      const tspan = svgEl("tspan", { x: round(t.x), dy: i === 0 ? 0 : t.size * 1.2 });
+      const tspan = svgEl("tspan", { x: round(t.x), dy: i === 0 ? 0 : spacing });
       tspan.textContent = lineText;
       el.appendChild(tspan);
     });
