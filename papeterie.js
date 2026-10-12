@@ -1057,6 +1057,7 @@
     editor.style.left = `${pos.left}px`;
     editor.style.top = `${pos.top}px`;
     editor.style.fontSize = `${textObj.size * pos.scale}px`;
+    editor.style.lineHeight = `${lineSpacing() * pos.scale}px`;
     editor.style.color = textObj.color;
     editor.value = textObj.text;
     editor.classList.remove("hidden");
