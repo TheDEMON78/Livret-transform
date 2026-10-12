@@ -1,0 +1,54 @@
+{
+  "name": "school-tool",
+  "version": "1.0.0",
+  "description": "Boîte à outils scolaire (brochure A5, générateur de trames) en app de bureau Windows/Linux/macOS.",
+  "main": "main.js",
+  "author": {
+    "name": "BloopStudio",
+    "email": "noreply@bloopstudio.local"
+  },
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder",
+    "dist:win": "electron-builder --win",
+    "dist:mac": "electron-builder --mac",
+    "dist:linux": "electron-builder --linux"
+  },
+  "devDependencies": {
+    "electron": "^32.2.7",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.bloopstudio.schooltool",
+    "productName": "School-tool",
+    "copyright": "Copyright © 2026 BloopStudio",
+    "icon": "build/icon.png",
+    "publish": null,
+    "afterPack": "scripts/afterPack.cjs",
+    "files": [
+      "main.js",
+      "index.html",
+      "style.css",
+      "app.js",
+      "papeterie.js",
+      "vendor/**/*"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": ["nsis", "portable"]
+    },
+    "mac": {
+      "target": ["dmg", "zip"],
+      "category": "public.app-category.productivity",
+      "identity": null
+    },
+    "linux": {
+      "target": ["AppImage", "deb"],
+      "category": "Office"
+    }
+  }
+}
